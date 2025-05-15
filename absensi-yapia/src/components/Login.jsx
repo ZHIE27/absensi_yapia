@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+const Login = ({ onLogin }) => {
   const [nama, setNama] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -9,20 +9,29 @@ const Login = () => {
 
   // Data dummy pengguna
   const users = [
-    { nama: "Budi", password: "123", nip: "123456", role: "Guru" },
-    { nama: "Alex", password: "234", nip: "234567", role: "Guru" },
-    { nama: "Dina", password: "321", nip: "654321", role: "Staff" }
+    { nama: "Budi", password: "123", nip: "123456", role: "user" },
+    { nama: "admin123", password: "admin123", nip: "234567", role: "admin" },
+    { nama: "Dina", password: "321", nip: "654321", role: "user" }
   ];
 
   const handleLogin = (e) => {
     e.preventDefault();
+    setError('');
 
     const foundUser = users.find(
       (user) => user.nama === nama && user.password === password
     );
 
     if (foundUser) {
+      // Simpan data user ke localStorage
       localStorage.setItem("user", JSON.stringify(foundUser));
+      
+      // Panggil callback onLogin dengan data user
+      if (onLogin) {
+        onLogin(foundUser);
+      }
+      
+      // Navigasi ke dashboard
       navigate("/dashboard");
     } else {
       setError("Nama atau password salah!");
