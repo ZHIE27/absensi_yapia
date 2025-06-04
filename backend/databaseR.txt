@@ -1,0 +1,66 @@
+CREATE DATABASE db_presensi_guru;
+USE db_presensi_guru;
+
+-- Tabel Users
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nip VARCHAR(20) UNIQUE,
+    nama VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    no_wa VARCHAR(20) NOT NULL,
+    role ENUM('admin', 'guru', 'staf') DEFAULT 'guru',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Tabel WiFi Terdaftar (untuk validasi MAC address secara manual atau integrasi LAN)
+CREATE TABLE wifi_terdaftar (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama_tempat VARCHAR(100) NOT NULL,
+    ssid VARCHAR(100),
+    mac_address VARCHAR(100) NOT NULL UNIQUE, -- Alamat MAC (BSSID)
+    keterangan TEXT
+);
+
+-- Tabel Presensi
+CREATE TABLE presensi (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    nama_user VARCHAR(100) NOT NULL,
+    tanggal DATE NOT NULL,
+    hari VARCHAR(10) NOT NULL,
+    jam_masuk TIME NOT NULL,
+    created_at DATETIME NOT NULL,
+    latitude DECIMAL(10, 8) NOT NULL,
+    longitude DECIMAL(11, 8) NOT NULL,
+    distance_from_school FLOAT NOT NULL,
+    location_status ENUM('valid', 'invalid') NOT NULL,
+    wifi_mac_address VARCHAR(100), -- opsional jika nantinya bisa didapat dari server
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_presensi (user_id, tanggal)
+);
+
+-- Tabel Notifikasi
+CREATE TABLE notifikasi (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    presensi_id INT NOT NULL,
+    jenis ENUM('presensi', 'laporan') NOT NULL,
+    isi_pesan TEXT NOT NULL,
+    status ENUM('terkirim', 'gagal') DEFAULT 'terkirim',
+    waktu_kirim TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (presensi_id) REFERENCES presensi(id)
+);
+
+-- Tabel Laporan
+CREATE TABLE laporan (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT NOT NULL,
+    bulan TINYINT NOT NULL,
+    tahun YEAR NOT NULL,
+    file_pdf VARCHAR(255),
+    file_excel VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES users(id),
+    UNIQUE KEY unique_laporan (bulan, tahun)
+);
