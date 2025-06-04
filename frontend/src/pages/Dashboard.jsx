@@ -9,6 +9,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState("");
+  const user = JSON.parse(localStorage.getItem("user_data"));
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user_data"));
     const date = new Date();
@@ -53,14 +54,18 @@ const Dashboard = () => {
 
   return (
     <div className="mt-5">
-      <h2 className="text-center font-extrabold text-[1.6rem]">Data Absensi Guru dan Staff {currentDate}</h2>
       {role == "admin" || role === "kepala_sekolah" ? (
         <>
+        <h2 className="text-center font-extrabold text-[1.6rem]">Data Absensi Guru dan Staff {currentDate}</h2>
+        <h2 className="text-center font-extrabold text-[1.6rem]">anda login sebagai {role}</h2>
           <TeacherTable />
           <StaffTable />
         </>
       ) : (
-        <UserDashboard />
+        <>
+          <h1 className="text-center font-extrabold text-[1.6rem]">Halo {user.nama}</h1>
+          <UserDashboard />
+        </>
       )}
 
 

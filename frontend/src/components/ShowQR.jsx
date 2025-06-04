@@ -3,8 +3,12 @@ import { QRCode } from "react-qrcode-logo";
 
 const ShowQR = () => {
   const today = new Date().toISOString().slice(0, 10); // format "YYYY-MM-DD"
-  const qrContent = `PRESENSI-${today}`;
-
+  const macAddress = ["60:14:B3:D3:CD:C5"];
+  const qrContent = JSON.stringify({
+    type: "PRESENSI",
+    date: today,
+    mac: macAddress,
+  });
   return (
     <div className="bg-white border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] p-6 w-full max-w-sm text-center rounded-none">
       <h2 className="text-2xl font-extrabold text-black mb-4 border-4  bg-yellow-300 inline-block">

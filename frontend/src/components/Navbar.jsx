@@ -29,8 +29,7 @@ const Navbar = () => {
     { label: "Dashboard", path: "/dashboard", roles: ["admin", "guru", "staf", "kepala_sekolah"] },
     { label: "Presensi", path: "/presensi", roles: ["admin", "guru", "staf"] },
     { label: "Perizinan", path: "/permission", roles: ["guru", "staf"] },
-    { label: "Konfirmasi", path: "/confirm-permission", roles: ["kepala_sekolah"] },
-    { label: "Profile", path: "/profile", roles: ["admin", "guru", "staf", "kepala_sekolah"] },
+    { label: "Konfirmasi", path: "/confirm-permission", roles: ["kepala_sekolah"] }
   ];
 
   // Filter menu berdasarkan role user
@@ -46,7 +45,7 @@ const Navbar = () => {
             {/* LOGO */}
             <div className="flex items-center">
               <img
-                src="/logo.png"
+                src="/logo-yapia.png"
                 alt="Logo"
                 className="h-10 w-10 border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white"
               />
@@ -106,6 +105,7 @@ const Navbar = () => {
                 </Link>
               );
             })}
+            <button onClick={handleLogout} className="px-3 py-1 border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] transition-all bg-white w-full text-start hover:bg-black hover:text-white cursor-pointer">Logout</button>
           </div>
         </div>
       </nav>

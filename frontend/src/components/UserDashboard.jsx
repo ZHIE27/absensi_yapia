@@ -1,37 +1,52 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const UserDashboard = () => {
   const [absensi, setAbsensi] = useState([]);
 
-  // Simulasi data absensi harian dalam sebulan
+  const fetchAbsensi = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/presensi/my', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setAbsensi(response.data.data);
+    } catch (error) {
+      console.error('Gagal mengambil data absensi:', error);
+    }
+  };
+
   useEffect(() => {
-    const dummy = [
-      { tanggal: '2025-05-01', status: 'Hadir' },
-      { tanggal: '2025-05-02', status: 'Izin' },
-      { tanggal: '2025-05-03', status: 'Sakit' },
-      { tanggal: '2025-05-04', status: 'Tidak Hadir' },
-      { tanggal: '2025-05-05', status: 'Hadir' },
-      { tanggal: '2025-05-06', status: 'Hadir' },
-      { tanggal: '2025-05-07', status: 'Hadir' },
-      { tanggal: '2025-05-08', status: 'Hadir' },
-      { tanggal: '2025-05-09', status: 'Hadir' },
-      { tanggal: '2025-05-10', status: 'Hadir' },
-    ];
-    setAbsensi(dummy);
+    fetchAbsensi();
+    const listener = () => {
+      console.log("Event presensi-update diterima");
+      fetchAbsensi();
+    };
+
+    window.addEventListener("presensi-update", listener);
+
+    return () => {
+      window.removeEventListener("presensi-update", listener);
+    };
   }, []);
 
-  const getColor = (status) => {
+  const getStatusColor = (status) => {
     switch (status) {
-      case 'Hadir':
-        return 'bg-lime-400';
-      case 'Izin':
-        return 'bg-yellow-300';
-      case 'Sakit':
-        return 'bg-orange-400';
-      case 'Tidak Hadir':
-        return 'bg-red-400';
+      case 'HADIR':
+        return 'text-green-700 font-semibold';
+      case 'IZIN':
+        return 'text-yellow-600 font-semibold';
+      case 'SAKIT':
+        return 'text-orange-600 font-semibold';
+      case 'TIDAK HADIR':
+        return 'text-red-600 font-semibold';
+      case 'BELUM PRESENSI':
+        return 'text-gray-500 font-semibold';
       default:
-        return 'bg-gray-300';
+        return '';
     }
   };
 
@@ -41,19 +56,43 @@ const UserDashboard = () => {
         Dashboard Absensi
       </h1>
 
-      <div className="mt-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {absensi.map((data, index) => (
-            <div
-              key={index}
-              className={`p-4 border-4 border-black shadow-[4px_4px_0px_0px_#000] ${getColor(data.status)} transition-all`}
-            >
-              <p className="text-sm text-black font-bold">Tanggal:</p>
-              <p className="text-lg font-extrabold">{new Date(data.tanggal).toLocaleDateString('id-ID')}</p>
-              <p className="mt-2 text-black font-semibold uppercase">{data.status}</p>
-            </div>
-          ))}
-        </div>
+      <div className="mt-6 overflow-x-auto">
+        <table className="min-w-full table-auto border-4 border-black shadow-[4px_4px_0px_0px_#000]">
+          <thead className="bg-black text-white">
+            <tr>
+              <th className="px-4 py-2 border border-black">Tanggal</th>
+              <th className="px-4 py-2 border border-black">Absensi Masuk</th>
+              <th className="px-4 py-2 border border-black">Absensi Keluar</th>
+              <th className="px-4 py-2 border border-black">Status Kehadiran</th>
+            </tr>
+          </thead>
+          <tbody>
+            {absensi.length === 0 ? (
+              <tr>
+                <td colSpan="4" className="text-center py-4">
+                  Tidak ada data absensi.
+                </td>
+              </tr>
+            ) : (
+              absensi.map((data, index) => (
+                <tr key={index} className="bg-white hover:bg-yellow-100 transition">
+                  <td className="px-4 py-2 border border-black text-center">
+                    {new Date(data.tanggal).toLocaleDateString('id-ID')}
+                  </td>
+                  <td className="px-4 py-2 border border-black text-center">
+                    {data.jam_masuk || '-'}
+                  </td>
+                  <td className="px-4 py-2 border border-black text-center">
+                    {data.jam_keluar || '-'}
+                  </td>
+                  <td className={`px-4 py-2 border border-black text-center uppercase ${getStatusColor(data.status)}`}>
+                    {data.status}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
