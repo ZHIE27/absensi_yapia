@@ -8,8 +8,26 @@ const qrRegionId = "reader";
 
 const Presensi = () => {
   const [scanning, setScanning] = useState(false);
+  const [role, setRole] = useState(null);
   const html5QrCodeRef = useRef(null);
   const qrContainerRef = useRef(null);
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user_data");
+
+    if (!userData) {
+      toast.error("User belum login!");
+      return;
+    }
+
+    try {
+      const parsedData = JSON.parse(userData);
+      setRole(parsedData.role);
+    } catch (error) {
+      console.error("Gagal parsing user_data:", error);
+      toast.error("Data pengguna tidak valid.");
+    }
+  }, []);
 
   const startScanning = async () => {
     try {
@@ -23,14 +41,13 @@ const Presensi = () => {
       await html5QrCodeRef.current.start(
         { facingMode: "environment" },
         config,
-        async () => { 
+        async () => {
           await html5QrCodeRef.current.stop();
           await html5QrCodeRef.current.clear();
           setScanning(false);
 
-          // Ambil data user dari localStorage
           const userData = JSON.parse(localStorage.getItem("user_data"));
-          
+
           if (!userData) {
             toast.error("Data user tidak ditemukan, silakan login kembali");
             return;
@@ -38,7 +55,6 @@ const Presensi = () => {
 
           toast.success("Presensi berhasil!");
 
-          // Kirim ke backend
           try {
             const res = await fetch("/api/presensi", {
               method: "POST",
@@ -49,32 +65,32 @@ const Presensi = () => {
                 nip: userData.nip,
                 nama: userData.nama,
                 noWa: userData.noWa,
-                totalAbsensi : userData.totalAbsensi,
-                status : userData.status
+                totalAbsensi: userData.totalAbsensi,
+                status: userData.status,
               }),
-            }
-          );
-            console.log(userData)
+            });
+
             const data = await res.json();
 
-            // Simpan data presensi ke localStorage
             const timestamp = new Date().toISOString();
             const presensiData = {
               nip: userData.nip,
               nama: userData.nama,
-              totalAbsensi : userData.totalHadir + 1,
+              totalAbsensi: userData.totalAbsensi + 1,
               waktu: timestamp,
-              status: "Hadir"
+              status: "Hadir",
             };
 
-            // Simpan riwayat presensi (array)
-            const existingPresensi = JSON.parse(localStorage.getItem("riwayat_presensi")) || [];
+            const existingPresensi =
+              JSON.parse(localStorage.getItem("riwayat_presensi")) || [];
             const updatedPresensi = [...existingPresensi, presensiData];
-            
-            localStorage.setItem("riwayat_presensi", JSON.stringify(updatedPresensi));
+
+            localStorage.setItem(
+              "riwayat_presensi",
+              JSON.stringify(updatedPresensi)
+            );
             localStorage.setItem("last_presensi", JSON.stringify(presensiData));
 
-            // Trigger event untuk update dashboard
             window.dispatchEvent(new CustomEvent("presensi-update"));
 
             if (data.success) {
@@ -104,54 +120,67 @@ const Presensi = () => {
     }
   };
 
+  if (!role) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Memuat data...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-yellow-200 text-black flex flex-col items-center justify-center px-4 py-8">
       <div className="text-center mb-6">
-        <h1 className="text-4xl font-extrabold text-blue-800 drop-shadow-md">
+        <h1 className="text-4xl font-extrabold border-4 border-black p-2 shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white inline-block">
           Presensi Guru & Staff
         </h1>
-        <p className="text-sm text-blue-700 mt-2">
-          Silakan arahkan kamera ke QR Code untuk melakukan presensi
+        <p className="text-base mt-2 font-bold">
+          Arahkan kamera ke QR Code untuk presensi
         </p>
       </div>
 
-      <div className="bg-white shadow-2xl rounded-xl p-6 w-full max-w-md space-y-4">
-        <div
-          id={qrRegionId}
-          ref={qrContainerRef}
-          className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden"
-        ></div>
-
-        <div className="flex justify-between items-center gap-4">
-          <button
-            onClick={startScanning}
-            disabled={scanning}
-            className={`w-1/2 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
-              scanning
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
-            }`}
-          >
-            Mulai Scan
-          </button>
-          <button
-            onClick={stopScanning}
-            disabled={!scanning}
-            className={`w-1/2 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
-              !scanning
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-red-600 hover:bg-red-700"
-            }`}
-          >
-            Stop Scan
-          </button>
+      {role === "admin" ? (
+        <div className="mt-6 w-full max-w-md ms-4 p-4">
+          <ShowQR />
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="bg-white border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] p-6 w-full max-w-md space-y-4 rounded-none">
+            <div
+              id={qrRegionId}
+              ref={qrContainerRef}
+              className="w-full aspect-square bg-gray-200 border-4 h-[295px] border-black shadow-inner"
+            ></div>
+
+            <div className="flex justify-between items-center gap-4">
+              <button
+                onClick={startScanning}
+                disabled={scanning}
+                className={`w-1/2 py-3 border-4 border-black font-bold shadow-[3px_3px_0_0_rgba(0,0,0,1)] transition-all duration-150 ${
+                  scanning
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-green-400 hover:bg-green-500"
+                }`}
+              >
+                Mulai Scan
+              </button>
+              <button
+                onClick={stopScanning}
+                disabled={!scanning}
+                className={`w-1/2 py-3 border-4 border-black font-bold shadow-[3px_3px_0_0_rgba(0,0,0,1)] transition-all duration-150 ${
+                  !scanning
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-red-400 hover:bg-red-500"
+                }`}
+              >
+                Stop Scan
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       <ToastContainer position="top-center" autoClose={3000} />
-      <div className="mt-5">
-        <ShowQR/> 
-      </div>
     </div>
   );
 };

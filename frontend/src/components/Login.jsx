@@ -1,117 +1,112 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import "../App.css"
+import { useUser } from "../context/UserContext.jsx"
 import axios from 'axios';
 
 const Login = () => {
-  const [credentials, setCredentials] = useState({
-    no_wa: '',
-    password: ''
-  });
-
+  const [noWa, setNoWa] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-
+  const { setUser } = useUser();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setCredentials(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    if (name === 'no_wa') {
+      setNoWa(value);
+    } else if (name === 'password') {
+      setPassword(value);
+    }
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-
+    
     try {
-      const res = await axios.post('http://localhost:5000/api/login', credentials, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      setMessage(res.data.message);
-      console.log('Login successful! Response data:', res.data);
+      if (!noWa || !password) {
+        throw new Error("Nomor WhatsApp dan password harus diisi");
+      }
       
-        // Simpan token JWT ke localStorage
-      if (res.data.token) {
-        localStorage.setItem('token', res.data.token);
-      }
-
-      // Simpan data user ke localStorage (opsional)
-      if (res.data.user) {
-        localStorage.setItem('user', JSON.stringify(res.data.user));
-        console.log('User details:', res.data.user);
-  }
+      const response = await axios.post(
+        "http://localhost:5000/api/login",
+        { no_wa: noWa, password }
+      );
+      
+      localStorage.setItem("user_data", JSON.stringify(response.data.user));
+      localStorage.setItem("token", response.data.token);
+      setUser(response.data.user);
+      setMessage("Login berhasil!");
       navigate("/dashboard");
-    } catch (err) {
-      let errorMessage = 'Gagal terhubung ke server';
-      if (err.response) {
-        errorMessage = err.response.data.message || err.response.statusText;
-        console.log('Error response:', err.response.data);
-      }
-      setError(errorMessage);
+
+    } catch(err) {
+      setError(
+        err.response?.data?.message || 
+        err.message || 
+        "Terjadi kesalahan saat login"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4">
+    <div className="flex items-center justify-center min-h-screen p-4 bg-yellow-100">
       <form 
         onSubmit={handleLogin}
-        className="p-6 rounded-lg bg-slate-50 shadow-md w-full max-w-md"
+        className="p-8 w-full max-w-md bg-white border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)]"
       >
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Login Absensi</h2>
-          <p className="text-gray-600 mt-1">Masukkan kredensial Anda</p>
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-extrabold text-black mb-2 border-b-4 border-black pb-2">
+            LOGIN ABSENSI
+          </h2>
+          <p className="text-lg font-medium text-gray-800">
+            Masukkan kredensial Anda
+          </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
-            {error}
+          <div className="mb-6 p-4 bg-red-200 text-red-900 border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)]">
+            ⚠️ {error}
           </div>
         )}
 
         {message && !error && (
-          <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md text-sm">
-            {message}
+          <div className="mb-6 p-4 bg-green-200 text-green-900 border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)]">
+            ✓ {message}
           </div>
         )}
 
-        <div className="mb-4">
-          <label htmlFor="no_wa" className="block text-gray-700 text-sm font-medium mb-1">
+        <div className="mb-6">
+          <label htmlFor="no_wa" className="block text-lg font-bold text-black mb-2">
             Nomor WhatsApp
           </label>
           <input
             id="no_wa"
             name="no_wa"
             type="text"
-            value={credentials.no_wa}
+            value={noWa}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Masukkan nomor WhatsApp"
+            className="w-full px-5 py-3 text-lg border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] focus:outline-none focus:shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
+            placeholder="Masukan Nomor WhatsApp Anda"
             required
           />
         </div>
 
-        <div className="mb-6">
-          <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-1">
+        <div className="mb-8">
+          <label htmlFor="password" className="block text-lg font-bold text-black mb-2">
             Password
           </label>
           <input
             id="password"
             name="password"
             type="password"
-            value={credentials.password}
+            value={password}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Masukkan password"
+            className="w-full px-5 py-3 text-lg border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] focus:outline-none focus:shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
+            placeholder="••••••••"
             required
           />
         </div>
@@ -119,33 +114,24 @@ const Login = () => {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full py-2 px-4 rounded-md text-white font-medium ${
-            loading 
-              ? 'bg-blue-400 cursor-not-allowed' 
-              : 'bg-blue-600 hover:bg-blue-700'
-          } transition-colors`}
+          className={`w-full py-4 px-6 text-xl font-bold border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all
+            ${loading 
+              ? 'bg-gray-300 text-gray-600 cursor-not-allowed' 
+              : 'bg-yellow-400 hover:bg-yellow-300 hover:shadow-[2px_2px_0_0_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1'
+            }`}
         >
           {loading ? (
             <span className="flex items-center justify-center">
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Memproses...
+              MEMPROSES...
             </span>
           ) : (
-            'Login'
+            'LOGIN →'
           )}
         </button>
-
-        <div className="mt-4 text-center">
-          <button
-            type="button"
-            className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
-          >
-            Lupa Password?
-          </button>
-        </div>
       </form>
     </div>
   );

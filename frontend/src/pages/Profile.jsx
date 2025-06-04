@@ -11,24 +11,34 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-blue-50 flex items-center justify-center px-4 py-10">
-      <div className="bg-white shadow-xl rounded-3xl p-8 max-w-md w-full">
+    <div className="min-h-screen bg-white flex items-center justify-center px-4 py-10">
+      <div className="bg-yellow-200 border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] p-8 max-w-md w-full rounded-none">
         <div className="flex flex-col items-center text-center">
           <img
             src={user.photoUrl}
             alt="Foto User"
-            className="w-32 h-32 rounded-full shadow-lg border-4 border-blue-200 mb-4"
+            className="w-32 h-32 border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] mb-6 rounded-sm object-cover"
           />
-          <h2 className="text-2xl font-bold text-blue-800 mb-1">{user.name}</h2>
-          <p className="text-blue-600 mb-4">{user.role}</p>
+          <h2 className="text-3xl font-extrabold text-black mb-1 border-4 border-black px-4 py-2 shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white">
+            {user.name}
+          </h2>
+          <p className="text-lg font-bold text-black mb-6">{user.role}</p>
 
-          <div className="w-full border-t border-gray-200 pt-4">
-            <div className="text-left space-y-2">
-              <p className="text-sm text-gray-500">NIP</p>
-              <p className="font-medium text-gray-800">{user.nip}</p>
+          <div className="w-full border-t-4 border-black pt-6 text-left">
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-bold text-black tracking-widest">
+                  NIP
+                </p>
+                <p className="font-extrabold text-black text-lg">{user.nip}</p>
+              </div>
 
-              <p className="text-sm text-gray-500 mt-3">Tanggal Lahir</p>
-              <p className="font-medium text-gray-800">{user.dob}</p>
+              <div>
+                <p className="text-xs font-bold text-black tracking-widest">
+                  TANGGAL LAHIR
+                </p>
+                <p className="font-extrabold text-black text-lg">{user.dob}</p>
+              </div>
             </div>
           </div>
         </div>

@@ -7,7 +7,6 @@ const ConfirmPermission = () => {
   const fetchData = async () => {
     const res = await fetch("/api/izin");
     const data = await res.json();
-    // Filter hanya yang belum dikonfirmasi
     const pending = data.filter((izin) => izin.status === "Menunggu Konfirmasi");
     setIzinList(pending);
   };
@@ -33,40 +32,43 @@ const ConfirmPermission = () => {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 bg-white p-6 rounded shadow">
-      <h2 className="text-2xl font-bold mb-4 text-center">Konfirmasi Pengajuan Izin/Sakit</h2>
-      <table className="w-full border text-left">
+    <div className="max-w-5xl mx-auto mt-20 bg-yellow-200 border-4 border-black p-6 rounded-none shadow-[8px_8px_0_0_rgba(0,0,0,1)]">
+      <h2 className="text-3xl font-extrabold mb-6 text-center border-4 border-black bg-white px-6 py-3 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
+        Konfirmasi Pengajuan Izin/Sakit
+      </h2>
+
+      <table className="w-full border-collapse border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
         <thead>
-          <tr className="bg-gray-100">
-            <th className="border px-3 py-2">Nama</th>
-            <th className="border px-3 py-2">Waktu Pengajuan</th>
-            <th className="border px-3 py-2">Alasan</th>
-            <th className="border px-3 py-2 text-center">Aksi</th>
+          <tr className="bg-white border-4 border-black">
+            <th className="border-4 border-black px-4 py-3 font-bold text-black">Nama</th>
+            <th className="border-4 border-black px-4 py-3 font-bold text-black">Waktu Pengajuan</th>
+            <th className="border-4 border-black px-4 py-3 font-bold text-black">Alasan</th>
+            <th className="border-4 border-black px-4 py-3 font-bold text-black text-center">Aksi</th>
           </tr>
         </thead>
         <tbody>
           {izinList.length === 0 ? (
             <tr>
-              <td colSpan="4" className="text-center py-4">
+              <td colSpan="4" className="text-center py-6 font-bold text-black">
                 Tidak ada pengajuan menunggu konfirmasi.
               </td>
             </tr>
           ) : (
             izinList.map((izin) => (
-              <tr key={izin.id}>
-                <td className="border px-3 py-2">{izin.nama}</td>
-                <td className="border px-3 py-2">{new Date(izin.tanggal).toLocaleDateString()}</td>
-                <td className="border px-3 py-2">{izin.alasan}</td>
-                <td className="border px-3 py-2 text-center space-x-2">
+              <tr key={izin.id} className="bg-white border-4 border-black">
+                <td className="border-4 border-black px-4 py-3 font-semibold">{izin.nama}</td>
+                <td className="border-4 border-black px-4 py-3">{new Date(izin.tanggal).toLocaleDateString()}</td>
+                <td className="border-4 border-black px-4 py-3">{izin.alasan || "-"}</td>
+                <td className="border-4 border-black px-4 py-3 text-center space-x-3">
                   <button
                     onClick={() => handleKonfirmasi(izin.id, "Disetujui")}
-                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                    className="bg-green-700 text-yellow-200 font-bold px-5 py-2 rounded-none shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:bg-green-800 transition-colors"
                   >
                     Ya
                   </button>
                   <button
                     onClick={() => handleKonfirmasi(izin.id, "Ditolak")}
-                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                    className="bg-red-700 text-yellow-200 font-bold px-5 py-2 rounded-none shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:bg-red-800 transition-colors"
                   >
                     Tidak
                   </button>

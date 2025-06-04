@@ -6,18 +6,22 @@ const ShowQR = () => {
   const qrContent = `PRESENSI-${today}`;
 
   return (
-    <div className="bg-white shadow-xl p-6 rounded-xl w-full max-w-sm text-center">
-      <h2 className="text-xl font-bold text-blue-800 mb-4">QR Presensi Hari Ini</h2>
-      <QRCode
-        value={qrContent}
-        size={256}
-        bgColor="#ffffff"
-        fgColor="#000000"
-        level="H"
-        eyeRadius={5}
-      />
-      <p className="text-sm text-gray-600 mt-4">
-        Scan QR ini dengan aplikasi presensi hari ini
+    <div className="bg-white border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] p-6 w-full max-w-sm text-center rounded-none">
+      <h2 className="text-2xl font-extrabold text-black mb-4 border-4  bg-yellow-300 inline-block">
+        QR Presensi Hari Ini
+      </h2>
+      <div className="inline-block border-4 border-black p-2 bg-white">
+        <QRCode
+          value={qrContent}
+          size={200}
+          bgColor="#ffffff"
+          fgColor="#000000"
+          level="H"
+          eyeRadius={0}
+        />
+      </div>
+      <p className="text-sm font-semibold text-black mt-4">
+        Scan QR ini untuk melakukan presensi hari ini
       </p>
     </div>
   );

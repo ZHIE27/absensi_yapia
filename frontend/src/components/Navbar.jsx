@@ -1,70 +1,117 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom"; // Ganti useNavigate dengan useLocation
+import { Link, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
+import { useUser } from "../context/UserContext.jsx"; // Pastikan path-nya benar
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const toggleMenu = () => setIsOpen(!isOpen);
-
-  // Gunakan useLocation untuk mendapatkan path/lokasi saat ini
   const location = useLocation();
-  
-  // Jika pathname adalah "/", jangan render navbar
-  if (location.pathname === "/") {
-    return null;
+  const { user, loading } = useUser();
+  const role = user?.role;
+  const navigate = useNavigate()
+
+  // Sembunyikan navbar saat user data belum dimuat
+  if (loading) return null;
+
+  // Sembunyikan navbar di halaman login
+  if (location.pathname === "/") return null;
+
+  //TOMBOL LOGOUT
+  const handleLogout = ()=>{
+    localStorage.removeItem("user_data")
+    localStorage.removeItem("token")
+    navigate("/");
+
   }
+  // Semua menu
+  const allMenuItems = [
+    { label: "Dashboard", path: "/dashboard", roles: ["admin", "guru", "staf", "kepala_sekolah"] },
+    { label: "Presensi", path: "/presensi", roles: ["admin", "guru", "staf"] },
+    { label: "Perizinan", path: "/permission", roles: ["guru", "staf"] },
+    { label: "Konfirmasi", path: "/confirm-permission", roles: ["kepala_sekolah"] },
+    { label: "Profile", path: "/profile", roles: ["admin", "guru", "staf", "kepala_sekolah"] },
+  ];
+
+  // Filter menu berdasarkan role user
+  const menuItems = role ? allMenuItems.filter(item => item.roles.includes(role)) : [];
+
+  const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
     <>
-      <nav className="bg-cyan-400 fixed w-full top-0 left-0 z-50 shadow-md">
+      <nav className="fixed top-0 left-0 w-full z-50 bg-yellow-400 border-b-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-[60px]">
+          <div className="flex justify-between items-center h-[70px]">
             {/* LOGO */}
             <div className="flex items-center">
               <img
                 src="/logo.png"
                 alt="Logo"
-                className="h-8 w-auto"
+                className="h-10 w-10 border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white"
               />
-              <span className="ml-2 font-bold text-white text-lg">MyApp</span>
+              <span className="ml-3 font-bold text-black text-xl tracking-wider">
+                SMK Yapia Parung
+              </span>
             </div>
 
-            {/* DESKTOP MENU */}
-            <div className="hidden md:flex space-x-6 text-white font-medium">
-              <Link to="/dashboard" className="hover:text-gray-200 transition">Dashboard</Link>
-              <Link to="/presensi" className="hover:text-gray-200 transition">Presensi</Link>
-              <Link to="/profile" className="hover:text-gray-200 transition">Profile</Link>
-              <Link to="/permission" className="hover:text-gray-200 transition">Permission</Link>
-              <Link to="/confirm-permission" className="hover:text-gray-200 transition">Confirm Permission</Link>
+            {/* MENU DESKTOP */}
+            <div className="hidden md:flex space-x-4 text-black font-bold">
+              {menuItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`px-3 py-1 border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] transition-all
+                      ${isActive ? "bg-black text-white" : "bg-white hover:bg-black hover:text-white"}`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+              <button onClick={handleLogout} className="px-3 py-1 border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] transition-all bg-white hover:bg-black hover:text-white cursor-pointer">Logout</button>
             </div>
 
-            {/* HAMBURGER (MOBILE) */}
+            {/* HAMBURGER MENU */}
             <div className="md:hidden">
               <button
                 onClick={toggleMenu}
-                className="text-white focus:outline-none"
+                className="text-black border-2 border-black p-2 bg-white shadow-[3px_3px_0_0_rgba(0,0,0,1)]"
               >
-                {isOpen ? <X size={28} /> : <Menu size={28} />}
+                {isOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
             </div>
           </div>
         </div>
 
-        {/* MOBILE MENU */}
+        {/* MENU MOBILE */}
         <div
-          className={`md:hidden transition-all duration-300 ease-in-out bg-cyan-300 overflow-hidden ${
-            isOpen ? "max-h-[200px] py-2" : "max-h-0"
+          className={`md:hidden bg-yellow-300 border-t-4 border-black transition-all duration-300 ease-in-out overflow-hidden ${
+            isOpen ? "max-h-[300px] py-3" : "max-h-0"
           }`}
         >
-          <div className="flex flex-col items-start px-6 space-y-4 text-white font-medium">
-            <Link to="/dashboard" onClick={() => setIsOpen(false)}>Dashboard</Link>
-            <Link to="/presensi" onClick={() => setIsOpen(false)}>Presensi</Link>
-            <Link to="/profile" onClick={() => setIsOpen(false)}>Profile</Link>
+          <div className="flex flex-col items-start px-6 space-y-4 font-bold text-black">
+            {menuItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsOpen(false)}
+                  className={`px-3 py-2 border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] w-full text-left transition-all
+                    ${isActive ? "bg-black text-white" : "bg-white hover:bg-black hover:text-white"}`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </nav>
-      
-      <div className="h-[60px] md:h-[60px]" />
+
+      {/* SPACER */}
+      <div className="h-[70px]" />
     </>
   );
 };
