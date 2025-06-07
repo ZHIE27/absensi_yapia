@@ -31,7 +31,7 @@ const Login = () => {
       }
       
       const response = await axios.post(
-        "http://localhost:5000/api/login",
+        "https://absensiyapia-production.up.railway.app/api/login",
         { no_wa: noWa, password }
       );
       

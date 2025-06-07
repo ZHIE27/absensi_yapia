@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 5000;
 
 // ✅ Izinkan CORS sebelum semua route
 app.use(cors({
-  origin: 'http://localhost:5173' || process.env.CLIENT_ORIGIN,
+  origin: 'http://localhost:5173',
   credentials: true // jika kamu pakai cookie/session
 }));
 
